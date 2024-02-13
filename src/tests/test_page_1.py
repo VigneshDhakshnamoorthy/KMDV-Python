@@ -2,11 +2,13 @@ import pandas as pd
 from time import sleep
 import pytest
 
+
 @pytest.mark.smoke
-def test_sample9(driver):
+def test_sample1(driver):
     driver.get("https://www.google.com")
     sleep(2)
     assert True
+
 
 @pytest.mark.smoke
 def test_sample2(driver):
@@ -14,13 +16,27 @@ def test_sample2(driver):
     sleep(2)
     assert False
 
+
 @pytest.mark.skip
 def test_sample3(driver):
     driver.get("https://www.google.com")
     sleep(2)
     assert True
-    
-    
+
+
+@pytest.mark.smoke
+def test_sample4(driver):
+    driver.get("https://www.google.com")
+    sleep(2)
+    assert True
+
+
+@pytest.mark.smoke
+def test_sample5(driver):
+    driver.get("https://www.google.com")
+    sleep(2)
+    assert True
+
 """
 
 pytest
