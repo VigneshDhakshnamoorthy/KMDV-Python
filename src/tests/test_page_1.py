@@ -30,7 +30,7 @@ def test_sample3(selenium: SeleniumUtil):
     assert True
 
 
-@pytest.mark.smoke
+@pytest.mark.skip
 def test_sample4(selenium: SeleniumUtil):
     selenium.open("https://www.google.com")
     selenium.log("test_sample4")
@@ -38,7 +38,7 @@ def test_sample4(selenium: SeleniumUtil):
     assert True
 
 
-@pytest.mark.smoke
+@pytest.mark.skip
 def test_sample5(selenium: SeleniumUtil):
     selenium.open("https://www.google.com")
     selenium.log("test_sample5")

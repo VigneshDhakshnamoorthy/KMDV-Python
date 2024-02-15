@@ -1,13 +1,11 @@
 import os
 import shutil
 import subprocess
-import threading
 import psutil
 
-from core.kmdv.base.test_results import TestResults
+from core.kmdv.config.browser_config import BrowserConfig
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
-allureEnable:bool = False
 allureResult = "allure-result"
 allureReport = "allure-report"
 allure_result_path = os.path.join(project_dir, allureResult)
@@ -15,8 +13,8 @@ allure_report_path = os.path.join(project_dir, allureReport)
 allure_history_source = os.path.join(project_dir, allureReport, "history")
 allure_history_target = os.path.join(project_dir, allure_result_path, "history")
 
-
-parallel_count = 3
+parallel_count = BrowserConfig.getParallelCount()
+allureEnable:bool = BrowserConfig.isAllureEnable()
 
 commands = [
     f"pytest -s --alluredir={allureResult} -n {parallel_count}",

@@ -1,16 +1,15 @@
 import sys
-import threading
 from time import sleep
 import pandas as pd
 import pytest
-from core.kmdv.util.browser_util import BrowserUtil
+from core.kmdv.config.browser_config import BrowserConfig
 from pytest import StashKey, CollectReport
 from typing import Dict
 from core.kmdv.base.test_results import TestResults
 from core.kmdv.util.selenium_util import SeleniumUtil
 
 phase_report_key = StashKey[Dict[str, CollectReport]]()
-test_results ={}
+test_results = {}
 
 sys.stdout = sys.stderr
 
@@ -35,32 +34,44 @@ def pytest_runtest_makereport(item, call):
         item._result_printed = True
 
 
-@pytest.fixture
-def selenium(request) -> SeleniumUtil: # type: ignore
+def getBrowserList() -> list[str]:
+    if BrowserConfig.isMultiBrowser() and not BrowserConfig.isExcelData():
+        return BrowserConfig.getMultiBrowserList()
+    else:
+        return BrowserConfig.getDefaultBrowser()
+
+
+@pytest.fixture(params=getBrowserList(), autouse=True)
+def selenium(request) -> SeleniumUtil:  # type: ignore
     method_name = request.node.name
     try:
-        browser_name = get_browser_name_from_excel(method_name)
+        if BrowserConfig.isExcelData():
+            browser_name = get_browser_name_from_excel(method_name)
+        else:
+            browser_name = request.param
     except:
-        browser_name ="chrome"
+        browser_name = request.param
     sel = SeleniumUtil(browser_name)
-    sel.log(f"Opening : {sel.getBrowserName()} Browser")
+    print(f"\nTestCase Name: {method_name}, Browser Name: {browser_name}")
+    sel.log(f"Opening : {browser_name} Browser")
     yield sel
     if TestResults.get_result(method_name) == "failed":
         sel.getScreenshot("Screenshot")
     sel.quit()
-    sel.log(f"Closing : {sel.getBrowserName()} Browser")
+    sel.log(f"Closing : {browser_name} Browser")
     sleep(2)
 
 
-
 def get_browser_name_from_excel(method_name):
-    df = pd.read_excel('resource/data/Book1.xlsx')
-    browser_name = df.loc[df["TestCaseName"] == method_name, 'Input'].values[0]
-    print(f"\nTestCase Name: {method_name}, Browser Name: {browser_name}")
+    if '[' in method_name:
+        method_name = method_name.split('[')[0]   
+         
+    df = pd.read_excel("resource/data/Book1.xlsx")
+    browser_name = df[df["TestCaseName"].str.contains(method_name, case=False)][
+        "Browser"
+    ].values[0]
     return browser_name
 
 
 def pytest_sessionfinish(session, exitstatus):
     TestResults.print_results()
-
-
