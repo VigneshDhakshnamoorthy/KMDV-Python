@@ -1,10 +1,13 @@
 import sys
 import threading
+from time import sleep
 import pandas as pd
 import pytest
 from core.kmdv.util.browser_util import BrowserUtil
 from pytest import StashKey, CollectReport
 from typing import Dict
+from core.kmdv.base.test_results import TestResults
+from core.kmdv.util.selenium_util import SeleniumUtil
 
 phase_report_key = StashKey[Dict[str, CollectReport]]()
 test_results ={}
@@ -18,7 +21,7 @@ def pytest_runtest_makereport(item, call):
             outcome = call.excinfo
             if outcome is not None:
                 result = "skipped"
-                test_results[item.name] = result
+                TestResults.add_result(item.name, result)
             return
         if call.when == "call":
             outcome = call.excinfo
@@ -28,21 +31,25 @@ def pytest_runtest_makereport(item, call):
                 result = "skipped"
             else:
                 result = "failed"
-            test_results[item.name] = result
+            TestResults.add_result(item.name, result)
         item._result_printed = True
 
 
 @pytest.fixture
-def driver(request):
+def selenium(request) -> SeleniumUtil: # type: ignore
     method_name = request.node.name
     try:
         browser_name = get_browser_name_from_excel(method_name)
     except:
         browser_name ="chrome"
-    driver = BrowserUtil(browser_name).get_driver()
-    driver.maximize_window()
-    yield driver
-    driver.quit()
+    sel = SeleniumUtil(browser_name)
+    sel.log(f"Opening : {sel.getBrowserName()} Browser")
+    yield sel
+    if TestResults.get_result(method_name) == "failed":
+        sel.getScreenshot("Screenshot")
+    sel.quit()
+    sel.log(f"Closing : {sel.getBrowserName()} Browser")
+    sleep(2)
 
 
 
@@ -54,8 +61,6 @@ def get_browser_name_from_excel(method_name):
 
 
 def pytest_sessionfinish(session, exitstatus):
-    print("\nTest results:")
-    for test_name, result in test_results.items():
-        print(f"{test_name} - Status: {result}")
+    TestResults.print_results()
 
 

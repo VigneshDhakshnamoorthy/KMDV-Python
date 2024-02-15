@@ -1,0 +1,2 @@
+class ElementNotFound(AssertionError):
+    pass
