@@ -22,10 +22,11 @@ class SeleniumUtil:
         self.actionChains = ActionChains(self.driver)
 
     def log(self, message) -> None:
+        print(message)
         with allure.step(message):
             pass
 
-    def sleepSeconds(self, waitseconds: int):
+    def sleepSeconds(self, waitseconds: int) -> None:
         sleep(waitseconds)
 
     def getBrowserName(self) -> str:

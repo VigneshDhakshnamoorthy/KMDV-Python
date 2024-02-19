@@ -14,7 +14,7 @@ test_results = {}
 sys.stdout = sys.stderr
 
 
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item, call) -> None:
     if not hasattr(item, "_result_printed"):
         if call.when == "setup":
             outcome = call.excinfo
@@ -52,7 +52,6 @@ def selenium(request) -> SeleniumUtil:  # type: ignore
     except:
         browser_name = request.param
     sel = SeleniumUtil(browser_name)
-    print(f"\nTestCase Name: {method_name}, Browser Name: {browser_name}")
     sel.log(f"Opening : {browser_name} Browser")
     yield sel
     if TestResults.get_result(method_name) == "failed":
@@ -62,7 +61,7 @@ def selenium(request) -> SeleniumUtil:  # type: ignore
     sleep(2)
 
 
-def get_browser_name_from_excel(method_name):
+def get_browser_name_from_excel(method_name) -> str:
     if '[' in method_name:
         method_name = method_name.split('[')[0]   
          
@@ -73,5 +72,5 @@ def get_browser_name_from_excel(method_name):
     return browser_name
 
 
-def pytest_sessionfinish(session, exitstatus):
+def pytest_sessionfinish(session, exitstatus) -> None:
     TestResults.print_results()
