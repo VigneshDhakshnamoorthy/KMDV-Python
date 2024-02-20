@@ -42,7 +42,7 @@ def getBrowserList() -> list[str]:
 
 
 @pytest.fixture(params=getBrowserList(), autouse=True)
-def selenium(request) -> SeleniumUtil:  # type: ignore
+def selenium(request) -> "SeleniumUtil": # type: ignore
     method_name = request.node.name
     try:
         if BrowserConfig.isExcelData():

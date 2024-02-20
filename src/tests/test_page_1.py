@@ -1,48 +1,33 @@
-import pandas as pd
-from time import sleep
 import pytest
-import allure
-
-from core.kmdv.util.selenium_util import SeleniumUtil
 
 
 @pytest.mark.smoke
-def test_sample1(selenium: SeleniumUtil) -> None:
-    selenium.open("https://www.google.com")
-    selenium.log("test_sample1")
-    selenium.sleepSeconds(2)
+def test_sample1(selenium) -> None:
+    selenium.open("https://www.google.com").log("test_sample1").sleepSeconds(2)
     assert True
 
 
 @pytest.mark.smoke
-def test_sample2(selenium: SeleniumUtil) -> None:
-    selenium.open("https://www.google.com")
-    selenium.log("test_sample2")
-    selenium.sleepSeconds(2)
+def test_sample2(selenium) -> None:
+    selenium.open("https://www.google.com").log("test_sample2").sleepSeconds(2)
     assert False
 
 
 @pytest.mark.skip
-def test_sample3(selenium: SeleniumUtil) -> None:
-    selenium.open("https://www.google.com")
-    selenium.log("test_sample3")
-    selenium.sleepSeconds(2)
+def test_sample3(selenium) -> None:
+    selenium.open("https://www.google.com").log("test_sample3").sleepSeconds(2)
     assert True
 
 
 @pytest.mark.skip
-def test_sample4(selenium: SeleniumUtil) -> None:
-    selenium.open("https://www.google.com")
-    selenium.log("test_sample4")
-    selenium.sleepSeconds(2)
+def test_sample4(selenium) -> None:
+    selenium.open("https://www.google.com").log("test_sample4").sleepSeconds(2)
     assert True
 
 
 @pytest.mark.skip
-def test_sample5(selenium: SeleniumUtil) -> None:
-    selenium.open("https://www.google.com")
-    selenium.log("test_sample5")
-    selenium.sleepSeconds(2)
+def test_sample5(selenium) -> None:
+    selenium.open("https://www.google.com").log("test_sample5").sleepSeconds(2)
     assert True
 
 
