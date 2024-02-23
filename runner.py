@@ -14,13 +14,14 @@ allure_history_source = os.path.join(project_dir, allureReport, "history")
 allure_history_target = os.path.join(project_dir, allure_result_path, "history")
 
 parallel_count = BrowserConfig.getParallelCount()
-allureEnable:bool = BrowserConfig.isAllureEnable()
+allureEnable: bool = BrowserConfig.isAllureEnable()
 
 commands = [
     f"pytest -s -v --alluredir={allureResult} -n {parallel_count} -k smoke",
     f"allure generate {allureResult} --clean",
     f"allure open",
 ]
+
 
 def kill_webdriver_processes() -> None:
     webdriver_names = ["chromedriver.exe", "msedgedriver.exe", "geckodriver.exe"]
@@ -29,6 +30,7 @@ def kill_webdriver_processes() -> None:
             if name in process.info["name"]:
                 psutil.Process(process.info["pid"]).terminate()
                 print(name)
+
 
 def remove_cache_directories(directory, folder_name):
     for root, dirs, files in os.walk(directory):
@@ -48,20 +50,22 @@ def remove_cache_directories(directory, folder_name):
             except Exception as e:
                 print(f"Error removing {folder_name} directory: {e}")
 
-                             
-def pytest_session():    
+
+def pytest_session():
     if os.path.exists(allure_result_path):
         shutil.rmtree(allure_result_path)
         print("Allure Result Folder Deleted")
 
     for command in commands:
         if "generate" in command:
-            if os.path.exists(allure_history_source) and os.path.exists(allure_result_path):
+            if os.path.exists(allure_history_source) and os.path.exists(
+                allure_result_path
+            ):
                 shutil.copytree(allure_history_source, allure_history_target)
                 shutil.rmtree(allure_report_path)
         if "open" in command:
             kill_webdriver_processes()
-            remove_cache_directories(project_dir,"__pycache__")  
+            remove_cache_directories(project_dir, "__pycache__")
             if not allureEnable:
                 break
         try:
@@ -70,8 +74,6 @@ def pytest_session():
             print(f"Error running command: {command}")
         except Exception as e:
             print(f"An error occurred while running command: {command}")
-    
+
 
 pytest_session()
-
-
