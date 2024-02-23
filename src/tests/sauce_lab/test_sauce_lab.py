@@ -14,7 +14,7 @@ def test_sauce_lab_1(selenium) -> None:
         else "Sauce Labs Backpack"
     )
     selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
-    assert homePage.verify_cart_count() == (
+    assert homePage.get_cart_count() == (
         1 if selenium.get_browser_name().lower() == "chrome" else 2
     )
 
@@ -30,6 +30,6 @@ def test_sauce_lab_2(selenium) -> None:
         else "Sauce Labs Backpack"
     )
     selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
-    assert homePage.verify_cart_count() == (
+    assert homePage.get_cart_count() == (
         1 if selenium.get_browser_name().lower() == "chrome" else 2
     )

@@ -38,5 +38,5 @@ class HomePage(LoginPage):
         )
         return self
 
-    def verify_cart_count(self, count: int) -> "HomePage":
+    def get_cart_count(self) -> "HomePage":
         return int(self.selenium.get_element_text(self.CART_ITEM_COUNT))
