@@ -1,3 +1,4 @@
+from typing import Union
 import allure
 from core.kmdv.config.customException import ElementNotFound
 from core.kmdv.util.browser_util import BrowserUtil
@@ -27,92 +28,89 @@ class SeleniumUtil:
             pass
         return self
 
-    def sleepSeconds(self, waitseconds: int) -> "SeleniumUtil":
+    def sleep_for_seconds(self, waitseconds: int) -> "SeleniumUtil":
         sleep(waitseconds)
         return self
 
-    def getBrowserName(self) -> str:
+    def get_browser_name(self) -> str:
         return self.browserName
 
-    def getDriver(self) -> Chrome | Edge | Firefox:
+    def get_driver(self) -> Chrome | Edge | Firefox:
         return self.driver
 
     def open(self, url) -> "SeleniumUtil":
         self.driver.get(url)
         return self
 
-    def title(self) -> str:
+    def get_title(self) -> str:
         return self.driver.title
 
     def quit(self) -> "SeleniumUtil":
         self.driver.quit()
         return self
 
-    def findElement(self, by: By) -> WebElement:
+    def find_element(self, by: By) -> WebElement:
         try:
-            return WebDriverWait(self.driver, self.waitTime).until(
-                lambda wd: wd.find_element(*by)
-            )
+            return WebDriverWait(
+                driver=self.driver, timeout=self.waitTime, poll_frequency=1
+            ).until(lambda wd: wd.find_element(*by))
         except Exception as e:
             raise ElementNotFound(str(by))
 
-    def getText(self, by: By) -> str:
-        return self.findElement(by).text
+    def get_element_text(self, by: By) -> str:
+        return self.find_element(by).text
 
-    def findElements(self, by: By) -> list[WebElement]:
-        return WebDriverWait(self.driver, self.waitTime).until(
-            lambda wd: wd.find_elements(*by)
-        )
+    def find_elements(self, by: By) -> list[WebElement]:
+        return WebDriverWait(
+            driver=self.driver, timeout=self.waitTime, poll_frequency=1
+        ).until(lambda wd: wd.find_elements(*by))
 
-    def getTextElements(self, by: By) -> list[str]:
-        elements: list[WebElement] = self.findElements(by)
+    def get_text_list_from_elements(self, by: By) -> list[str]:
+        elements: list[WebElement] = self.find_elements(by)
         return [element.text for element in elements]
 
     def click(self, by: By) -> "SeleniumUtil":
-        self.findElement(by).click()
+        self.find_element(by).click()
         return self
 
-    def jsClick(self, by: By) -> "SeleniumUtil":
-        self.driver.execute_script("arguments[0].click();", self.findElement(by))
+    def js_click(self, by: By) -> "SeleniumUtil":
+        self.driver.execute_script("arguments[0].click();", self.find_element(by))
         return self
 
-    def scrollIntoView(self, by: By) -> "SeleniumUtil":
+    def scroll_into_view(self, by: By) -> "SeleniumUtil":
         self.driver.execute_script(
-            "arguments[0].scrollIntoView();", self.findElement(by)
+            "arguments[0].scrollIntoView();", self.find_element(by)
         )
         return self
 
     def type(self, by: By, value: str) -> "SeleniumUtil":
-        self.findElement(by).send_keys(value)
+        self.find_element(by).send_keys(value)
         return self
 
-
-    def jsType(self, by: By, value: str) -> "SeleniumUtil":
+    def js_type(self, by: By, value: str) -> "SeleniumUtil":
         self.driver.execute_script(
-            "arguments[0].value = arguments[1];", self.findElement(by), value
+            "arguments[0].value = arguments[1];", self.find_element(by), value
         )
         return self
 
-
-    def typeEnter(self, by: By, value: str) -> "SeleniumUtil":
-        self.findElement(by).send_keys(value + Keys.ENTER)
+    def type_enter(self, by: By, value: str) -> "SeleniumUtil":
+        self.find_element(by).send_keys(value + Keys.ENTER)
         return self
 
-
-    def typeTab(self, by: By, value: str) -> "SeleniumUtil":
-        self.findElement(by).send_keys(value + Keys.TAB)
+    def type_tab(self, by: By, value: str) -> "SeleniumUtil":
+        self.find_element(by).send_keys(value + Keys.TAB)
         return self
 
-    def typeReturn(self, by: By, value: str) -> "SeleniumUtil":
-        self.findElement(by).send_keys(value + Keys.RETURN)
+    def type_return(self, by: By, value: str) -> "SeleniumUtil":
+        self.find_element(by).send_keys(value + Keys.RETURN)
         return self
 
-    def switchFrame(self, frame: str | int) -> "SeleniumUtil":
+    def switch_frame(self, frame: str | int) -> "SeleniumUtil":
         self.switchDefault()
         self.driver.switch_to.frame(frame)
         return self
 
-    def switchDefault(self) -> "SeleniumUtil":
+    def switch_default(self) -> "SeleniumUtil":
         self.driver.switch_to.default_content()
         return self
 
@@ -121,14 +119,14 @@ class SeleniumUtil:
         return self
 
     def hover(self, by: By) -> "SeleniumUtil":
-        self.actionChains.move_to_element(self.findElement(by)).perform()
+        self.actionChains.move_to_element(self.find_element(by)).perform()
         return self
 
-    def rightClick(self, by: By) -> "SeleniumUtil":
-        self.actionChains.context_click(self.findElement(by)).perform()
+    def right_click(self, by: By) -> "SeleniumUtil":
+        self.actionChains.context_click(self.find_element(by)).perform()
         return self
 
-    def switchtoChildWindow(self) -> "SeleniumUtil":
+    def switch_to_child_window(self) -> "SeleniumUtil":
         parent_window: str = self.driver.current_window_handle
         all_windows: list[str] = self.driver.window_handles
         for window_handle in all_windows:
@@ -137,16 +135,34 @@ class SeleniumUtil:
                 break
         return self
 
-    def getScreenshot(self, screenshotName: str) -> "SeleniumUtil":
+    def get_screenshot(self, screenshotName: str) -> "SeleniumUtil":
         allure.attach(
-            self.getDriver().get_screenshot_as_png(),
+            self.get_driver().get_screenshot_as_png(),
             name=screenshotName,
             attachment_type=AttachmentType.PNG,
         )
         return self
 
-    def alertAccept(self) -> str:
-        alert = self.getDriver().switch_to.alert
+    def get_element_screenshot(self, by: By, screenshotName: str) -> "SeleniumUtil":
+        allure.attach(
+            self.find_element(by).screenshot_as_png,
+            name=screenshotName,
+            attachment_type=AttachmentType.PNG,
+        )
+        return self
+    
+    def alert_accept(self) -> str:
+        alert = self.get_driver().switch_to.alert
         alertText = alert.text
         alert.accept()
         return alertText
+
+    def visibility_of_element_located(self, by: By) -> WebElement:
+        return WebDriverWait(
+            driver=self.driver, timeout=self.waitTime, poll_frequency=1
+        ).until(EC.visibility_of_element_located(by))
+        
+    def alert_is_present(self) -> bool:
+        return WebDriverWait(
+            driver=self.driver, timeout=self.waitTime, poll_frequency=1
+        ).until(EC.alert_is_present())

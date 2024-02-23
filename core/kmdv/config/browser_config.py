@@ -45,3 +45,7 @@ class BrowserConfig:
     @staticmethod
     def getParallelCount() -> str:
         return BrowserConfig.config.get("BrowserConfig", "Parallel")
+    
+    @staticmethod
+    def getURL() -> str:
+        return BrowserConfig.config.get("BrowserConfig", "URL")

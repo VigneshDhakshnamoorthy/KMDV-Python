@@ -55,7 +55,7 @@ def selenium(request) -> "SeleniumUtil": # type: ignore
     sel.log(f"Opening : {browser_name} Browser")
     yield sel
     if TestResults.get_result(method_name) == "failed":
-        sel.getScreenshot("Screenshot")
+        sel.get_screenshot("screen shot | failure")
     sel.quit()
     sel.log(f"Closing : {browser_name} Browser")
     sleep(2)
