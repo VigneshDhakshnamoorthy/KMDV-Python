@@ -1,11 +1,12 @@
 import allure
 import pytest
+from core.kmdv.util.selenium_util import SeleniumUtil
 from pages.HomePage import HomePage
 
 
 @pytest.mark.smoke
 @pytest.mark.regression
-def test_sauce_lab_1(selenium) -> None:
+def test_sauce_lab_1(selenium: SeleniumUtil) -> None:
     homePage = HomePage(selenium)
     homePage.open_app().login_to_app("standard_user", "secret_sauce")
     homePage.add_product(
@@ -19,9 +20,9 @@ def test_sauce_lab_1(selenium) -> None:
     )
 
 
-@pytest.mark.regression
+@pytest.mark.smoke
 @pytest.mark.dev
-def test_sauce_lab_2(selenium) -> None:
+def test_sauce_lab_2(selenium: SeleniumUtil) -> None:
     homePage = HomePage(selenium)
     homePage.open_app().login_to_app("standard_user", "secret_sauce")
     homePage.add_product(

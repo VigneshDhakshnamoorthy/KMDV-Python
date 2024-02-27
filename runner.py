@@ -17,7 +17,7 @@ parallel_count = BrowserConfig.getParallelCount()
 allureEnable: bool = BrowserConfig.isAllureEnable()
 
 commands = [
-    f"pytest -s -v --alluredir={allureResult} -n {parallel_count} -k smoke",
+    f"pytest -s --alluredir={allureResult} -n {parallel_count} -k smoke",
     f"allure generate {allureResult} --clean",
     f"allure open",
 ]
