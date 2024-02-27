@@ -46,18 +46,18 @@ def selenium(request) -> "SeleniumUtil": # type: ignore
     method_name = request.node.name
     try:
         if BrowserConfig.isExcelData():
-            browser_name = get_browser_name_from_excel(method_name)
+            browser_name:str = get_browser_name_from_excel(method_name)
         else:
-            browser_name = request.param
+            browser_name:str = request.param
     except:
-        browser_name = request.param
+        browser_name:str = request.param
     sel = SeleniumUtil(browser_name)
-    sel.log(f"Opening : {browser_name} Browser")
+    sel.log(f"Opening : {browser_name.title()} Browser")
     yield sel
     if TestResults.get_result(method_name) == "failed":
         sel.get_screenshot("screen shot | failure")
     sel.quit()
-    sel.log(f"Closing : {browser_name} Browser")
+    sel.log(f"Closing : {browser_name.title()} Browser")
     sleep(2)
 
 
