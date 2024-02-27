@@ -47,5 +47,9 @@ class BrowserConfig:
         return BrowserConfig.config.get("BrowserConfig", "Parallel")
     
     @staticmethod
+    def getTag() -> str:
+        return BrowserConfig.config.get("BrowserConfig", "Tag")
+    
+    @staticmethod
     def getURL() -> str:
         return BrowserConfig.config.get("BrowserConfig", "URL")

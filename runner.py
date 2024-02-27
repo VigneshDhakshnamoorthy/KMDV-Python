@@ -15,9 +15,14 @@ allure_history_target = os.path.join(project_dir, allure_result_path, "history")
 
 parallel_count = BrowserConfig.getParallelCount()
 allureEnable: bool = BrowserConfig.isAllureEnable()
+tag = BrowserConfig.getTag()
 
 commands = [
-    f"pytest -s --alluredir={allureResult} -n {parallel_count} -k smoke",
+    (
+        f"pytest -s --alluredir={allureResult} -n {parallel_count}"
+        if tag == ""
+        else f"pytest -s --alluredir={allureResult} -n {parallel_count} -k {tag}"
+    ),
     f"allure generate {allureResult} --clean",
     f"allure open",
 ]

@@ -11,15 +11,23 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from allure_commons.types import AttachmentType
 from time import sleep
+from selenium.common.exceptions import NoSuchWindowException
 
 
 class SeleniumUtil:
     def __init__(self, browserName) -> None:
         self.browserName = browserName
-        self.waitTime = 10
-        self.driver = BrowserUtil(self.browserName).get_driver()
-        self.driver.implicitly_wait(self.waitTime)
-        self.driver.maximize_window()
+        self.waitTime = 15
+        try:
+            self.driver = BrowserUtil(self.browserName).get_driver()
+            self.driver.implicitly_wait(self.waitTime)
+            self.driver.maximize_window()
+        except NoSuchWindowException:
+            self.driver.quit()
+            self.driver = BrowserUtil(self.browserName).get_driver()            
+            self.driver.implicitly_wait(self.waitTime)
+            self.driver.maximize_window()
+            print("Error : Browsing context has been discarded. Retrying...")
         self.actionChains = ActionChains(self.driver)
 
     def log(self, message) -> "SeleniumUtil":
