@@ -71,6 +71,3 @@ def get_browser_name_from_excel(method_name) -> str:
     ].values[0]
     return browser_name
 
-
-def pytest_sessionfinish(session, exitstatus) -> None:
-    TestResults.print_results()
