@@ -1,4 +1,4 @@
-from typing import Callable, Literal, Union
+from typing import Callable, List, Literal, Union
 import allure
 from core.kmdv.config.customException import ElementNotFound
 from core.kmdv.util.browser_util import BrowserUtil
@@ -166,7 +166,7 @@ class SeleniumUtil:
         return self
 
     def switch_to_alert(self) -> Alert:
-        return self.get_driver().switch_to.alert
+        return self.wait_alert_is_present()
 
     def alert_send_keys(self, value: str) -> "SeleniumUtil":
         self.switch_to_alert().send_keys(value)
@@ -183,21 +183,44 @@ class SeleniumUtil:
         self.switch_to_alert().dismiss()
         return self
 
-    def visibility_of_element_located(self, by: By) -> WebElement | bool:
+    def wait_visibility_of_element_located(self, by: By) -> WebElement | Literal[False]:
         return self.wait_until(EC.visibility_of_element_located(by))
 
-    def invisibility_of_element_located(self, by: By) -> WebElement | bool:
+    def wait_invisibility_of_element_located(self, by: By) -> WebElement | bool:
         return self.wait_until(EC.invisibility_of_element_located(by))
 
-    def presence_of_element_located(self, by: By) -> WebElement:
+    def wait_presence_of_element_located(self, by: By) -> WebElement:
         return self.wait_until(EC.presence_of_element_located(by))
 
-    def alert_is_present(self) -> Alert | Literal[False]:
+    def wait_alert_is_present(self) -> Alert | Literal[False]:
         return self.wait_until(EC.alert_is_present())
+
+    def wait_element_to_be_clickable(self, by: By) -> WebElement | Literal[False]:
+        return self.wait_until(EC.element_to_be_clickable(by))
+
+    def wait_frame_to_be_available_and_switch_to_it(self, value: By | str) -> bool:
+        return self.wait_until(EC.frame_to_be_available_and_switch_to_it(value))
+
+    def wait_element_to_be_selected(self, by: By) -> bool:
+        return self.wait_until(EC.element_to_be_selected(self.find_element(by)))
+
+    def wait_visibility_of_all_elements_located(
+        self, by: By
+    ) -> List[WebElement] | Literal[False]:
+        return self.wait_until(EC.visibility_of_all_elements_located(by))
+
+    def wait_visibility_of_any_elements_located(self, by: By) -> List[WebElement]:
+        return self.wait_until(EC.visibility_of_any_elements_located(by))
+
+    def wait_staleness_of(self, by: By) -> bool:
+        return self.wait_until(EC.staleness_of(self.find_element(by)))
 
     def is_enabled(self, by: By) -> bool:
         return self.find_element(by).is_enabled()
-
+    
+    def is_enabled(self, by: By, attribute:str) -> str:
+        return self.find_element(by).get_attribute(attribute)
+        
     def is_displayed(self, by: By) -> bool:
         return self.find_element(by).is_displayed()
 
