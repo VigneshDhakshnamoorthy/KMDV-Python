@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Callable, Literal, Union
 import allure
 from core.kmdv.config.customException import ElementNotFound
 from core.kmdv.util.browser_util import BrowserUtil
@@ -58,11 +58,14 @@ class SeleniumUtil:
         self.driver.quit()
         return self
 
+    def wait_until(self, method: Callable):
+        return WebDriverWait(
+            driver=self.driver, timeout=self.waitTime, poll_frequency=1
+        ).until(method)
+
     def find_element(self, by: By) -> WebElement:
         try:
-            return WebDriverWait(
-                driver=self.driver, timeout=self.waitTime, poll_frequency=1
-            ).until(lambda wd: wd.find_element(*by))
+            return self.wait_until(lambda wd: wd.find_element(*by))
         except Exception as e:
             raise ElementNotFound(str(by))
 
@@ -70,9 +73,7 @@ class SeleniumUtil:
         return self.find_element(by).text
 
     def find_elements(self, by: By) -> list[WebElement]:
-        return WebDriverWait(
-            driver=self.driver, timeout=self.waitTime, poll_frequency=1
-        ).until(lambda wd: wd.find_elements(*by))
+        return self.wait_until(lambda wd: wd.find_elements(*by))
 
     def get_text_list_from_elements(self, by: By) -> list[str]:
         elements: list[WebElement] = self.find_elements(by)
@@ -114,13 +115,13 @@ class SeleniumUtil:
         self.find_element(by).send_keys(value + Keys.RETURN)
         return self
 
-    def switch_frame(self, frame: str | int) -> "SeleniumUtil":
-        self.switchDefault()
-        self.driver.switch_to.frame(frame)
-        return self
-
     def switch_default(self) -> "SeleniumUtil":
         self.driver.switch_to.default_content()
+        return self
+
+    def switch_frame(self, frame: str | int) -> "SeleniumUtil":
+        self.switch_default()
+        self.driver.switch_to.frame(frame)
         return self
 
     def refresh(self) -> "SeleniumUtil":
@@ -182,15 +183,17 @@ class SeleniumUtil:
         self.switch_to_alert().dismiss()
         return self
 
-    def visibility_of_element_located(self, by: By) -> WebElement:
-        return WebDriverWait(
-            driver=self.driver, timeout=self.waitTime, poll_frequency=1
-        ).until(EC.visibility_of_element_located(by))
+    def visibility_of_element_located(self, by: By) -> WebElement | bool:
+        return self.wait_until(EC.visibility_of_element_located(by))
 
-    def alert_is_present(self) -> bool:
-        return WebDriverWait(
-            driver=self.driver, timeout=self.waitTime, poll_frequency=1
-        ).until(EC.alert_is_present())
+    def invisibility_of_element_located(self, by: By) -> WebElement | bool:
+        return self.wait_until(EC.invisibility_of_element_located(by))
+
+    def presence_of_element_located(self, by: By) -> WebElement:
+        return self.wait_until(EC.presence_of_element_located(by))
+
+    def alert_is_present(self) -> Alert | Literal[False]:
+        return self.wait_until(EC.alert_is_present())
 
     def is_enabled(self, by: By) -> bool:
         return self.find_element(by).is_enabled()
