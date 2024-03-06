@@ -1,4 +1,4 @@
-from core.kmdv.base.test_runner import run_pytest_session
+from core.kmdv.base.test_runner import TestRunner
 
 
-run_pytest_session()
+TestRunner.run_session()

@@ -24,7 +24,7 @@ class SeleniumUtil:
             self.driver.maximize_window()
         except NoSuchWindowException:
             self.driver.quit()
-            self.driver = BrowserUtil(self.browserName).get_driver()            
+            self.driver = BrowserUtil(self.browserName).get_driver()
             self.driver.implicitly_wait(self.waitTime)
             self.driver.maximize_window()
             print("Error : Browsing context has been discarded. Retrying...")
@@ -158,7 +158,7 @@ class SeleniumUtil:
             attachment_type=AttachmentType.PNG,
         )
         return self
-    
+
     def alert_accept(self) -> str:
         alert = self.get_driver().switch_to.alert
         alertText = alert.text
@@ -169,8 +169,17 @@ class SeleniumUtil:
         return WebDriverWait(
             driver=self.driver, timeout=self.waitTime, poll_frequency=1
         ).until(EC.visibility_of_element_located(by))
-        
+
     def alert_is_present(self) -> bool:
         return WebDriverWait(
             driver=self.driver, timeout=self.waitTime, poll_frequency=1
         ).until(EC.alert_is_present())
+
+    def is_enabled(self, by: By) -> bool:
+        return self.find_element(by).is_enabled()
+
+    def is_displayed(self, by: By) -> bool:
+        return self.find_element(by).is_displayed()
+
+    def is_selected(self, by: By) -> bool:
+        return self.find_element(by).is_selected()
