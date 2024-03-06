@@ -12,6 +12,7 @@ from selenium.webdriver.common.keys import Keys
 from allure_commons.types import AttachmentType
 from time import sleep
 from selenium.common.exceptions import NoSuchWindowException
+from selenium.webdriver.common.alert import Alert
 
 
 class SeleniumUtil:
@@ -159,11 +160,27 @@ class SeleniumUtil:
         )
         return self
 
-    def alert_accept(self) -> str:
-        alert = self.get_driver().switch_to.alert
-        alertText = alert.text
-        alert.accept()
-        return alertText
+    def clear(self, by: By) -> "SeleniumUtil":
+        self.find_element(by).clear()
+        return self
+
+    def switch_to_alert(self) -> Alert:
+        return self.get_driver().switch_to.alert
+
+    def alert_send_keys(self, value: str) -> "SeleniumUtil":
+        self.switch_to_alert().send_keys(value)
+        return self
+
+    def alert_text(self) -> str:
+        return self.switch_to_alert().text
+
+    def alert_accept(self) -> "SeleniumUtil":
+        self.switch_to_alert().accept()
+        return self
+
+    def alert_dismiss(self) -> "SeleniumUtil":
+        self.switch_to_alert().dismiss()
+        return self
 
     def visibility_of_element_located(self, by: By) -> WebElement:
         return WebDriverWait(
