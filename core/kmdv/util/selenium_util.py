@@ -84,11 +84,11 @@ class SeleniumUtil:
         return self
 
     def js_click(self, by: By) -> "SeleniumUtil":
-        self.driver.execute_script("arguments[0].click();", self.find_element(by))
+        self.get_driver().execute_script("arguments[0].click();", self.find_element(by))
         return self
 
     def scroll_into_view(self, by: By) -> "SeleniumUtil":
-        self.driver.execute_script(
+        self.get_driver().execute_script(
             "arguments[0].scrollIntoView();", self.find_element(by)
         )
         return self
@@ -98,7 +98,7 @@ class SeleniumUtil:
         return self
 
     def js_type(self, by: By, value: str) -> "SeleniumUtil":
-        self.driver.execute_script(
+        self.get_driver().execute_script(
             "arguments[0].value = arguments[1];", self.find_element(by), value
         )
         return self
@@ -116,16 +116,16 @@ class SeleniumUtil:
         return self
 
     def switch_default(self) -> "SeleniumUtil":
-        self.driver.switch_to.default_content()
+        self.get_driver().switch_to.default_content()
         return self
 
     def switch_frame(self, frame: str | int) -> "SeleniumUtil":
         self.switch_default()
-        self.driver.switch_to.frame(frame)
+        self.get_driver().switch_to.frame(frame)
         return self
 
     def refresh(self) -> "SeleniumUtil":
-        self.driver.refresh()
+        self.get_driver().refresh()
         return self
 
     def hover(self, by: By) -> "SeleniumUtil":
@@ -137,11 +137,11 @@ class SeleniumUtil:
         return self
 
     def switch_to_child_window(self) -> "SeleniumUtil":
-        parent_window: str = self.driver.current_window_handle
-        all_windows: list[str] = self.driver.window_handles
+        parent_window: str = self.get_driver().current_window_handle
+        all_windows: list[str] = self.get_driver().window_handles
         for window_handle in all_windows:
             if not window_handle == parent_window:
-                self.driver.switch_to.window(window_handle)
+                self.get_driver().switch_to.window(window_handle)
                 break
         return self
 

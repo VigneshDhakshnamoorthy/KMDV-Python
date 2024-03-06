@@ -26,9 +26,9 @@ class TestSauceLab:
         homePage = HomePage(selenium)
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         homePage.add_product(
-            "Sauce Labs Onesie"
+            "Sauce Labs Backpack"
             if selenium.get_browser_name().lower() == "chrome"
-            else "Sauce Labs Backpack"
+            else "Sauce Labs Onesie"
         )
         selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
         assert homePage.get_cart_count() == (
