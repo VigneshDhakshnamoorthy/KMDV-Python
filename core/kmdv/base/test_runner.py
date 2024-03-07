@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -37,6 +38,23 @@ class TestRunner:
                     print(f"Error removing {folder_name} directory: {e}")
 
     @staticmethod
+    def json_report(
+        file_name, completed_time, passed_count, failed_count, skipped_count
+    ):
+        if os.path.exists(file_name):
+            with open(file_name, "r") as file:
+                data = json.load(file)
+        else:
+            data = {}
+        data[completed_time] = {
+            "Passed": passed_count,
+            "Failed": failed_count,
+            "Skipped": skipped_count,
+        }
+        with open(file_name, "w") as file:
+            json.dump(data, file, indent=4)
+
+    @staticmethod
     def run_session():
         file_dir = os.path.dirname(os.path.abspath(__file__))
         project_dir = file_dir.split("core")[0]
@@ -44,11 +62,13 @@ class TestRunner:
         allureReport = "allure-report"
         pytestReportFolder = "pytest-report"
         pytestReport = "pytest.html"
+        pytestHistory = "history.json"
         allure_result_path = os.path.join(project_dir, allureResult)
         allure_report_path = os.path.join(project_dir, allureReport)
         pytest_cache_folder_path = os.path.join(project_dir, ".pytest_cache")
         pytest_report_folder_path = os.path.join(project_dir, pytestReportFolder)
         pytest_report_path = os.path.join(pytest_report_folder_path, pytestReport)
+        pytest_history_path = os.path.join(pytest_report_folder_path, pytestHistory)
         allure_history_source = os.path.join(project_dir, allureReport, "history")
         allure_history_target = os.path.join(project_dir, allure_result_path, "history")
         parallel_count = BrowserConfig.getParallelCount()
@@ -70,7 +90,6 @@ class TestRunner:
 
         for folder in [
             allure_result_path,
-            pytest_report_folder_path,
             pytest_cache_folder_path,
         ]:
             if os.path.exists(folder):
@@ -100,9 +119,11 @@ class TestRunner:
             with open(pytest_report_path, "r") as f:
                 html_content = f.read()
             tree = etree.HTML(html_content)
-            completed_time = str(tree.xpath("(//h1[@id='title']/following-sibling::p)[1]/text()")[0]).split(
-                "on "
-            )[1].split(" by")[0]
+            completed_time = (
+                str(tree.xpath("(//h1[@id='title']/following-sibling::p)[1]/text()")[0])
+                .split("on ")[1]
+                .split(" by")[0].replace("at","-")
+            )
             failed_count = str(tree.xpath("//span[@class='failed']/text()")[0]).split(
                 " "
             )[0]
@@ -112,6 +133,9 @@ class TestRunner:
             skipped_count = str(tree.xpath("//span[@class='skipped']/text()")[0]).split(
                 " "
             )[0]
+            TestRunner.json_report(
+                pytest_history_path,completed_time, passed_count, failed_count, skipped_count
+            )
             print(
                 f"\033[96mTest Execution Summary : {completed_time}\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m"
             )
