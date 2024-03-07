@@ -1,7 +1,6 @@
 import os
 import shutil
 import subprocess
-import time
 import psutil
 from lxml import etree
 
@@ -53,19 +52,27 @@ class TestRunner:
         allure_history_source = os.path.join(project_dir, allureReport, "history")
         allure_history_target = os.path.join(project_dir, allure_result_path, "history")
         parallel_count = BrowserConfig.getParallelCount()
+        parallel_count_command = (
+            ""
+            if parallel_count == ""
+            else "" if int(parallel_count) < 2 else f"-n {parallel_count}"
+        )
         allureEnable = BrowserConfig.isAllureEnable()
         tag = BrowserConfig.getTag()
+        tag_command = "" if tag == "" else f"-k {tag}"
         commands = [
             (
-                f"pytest -s --alluredir={allureResult} --html={pytest_report_path} --self-contained-html -n {parallel_count}"
-                if tag == ""
-                else f"pytest -s --alluredir={allureResult} --html={pytest_report_path} --self-contained-html -n {parallel_count} -k {tag}"
+                f"pytest -s --alluredir={allureResult} --html={pytest_report_path} --self-contained-html {parallel_count_command} {tag_command}"
             ),
             f"allure generate {allureResult} --clean",
             f"allure open",
         ]
 
-        for folder in [allure_result_path,pytest_report_folder_path,pytest_cache_folder_path]:
+        for folder in [
+            allure_result_path,
+            pytest_report_folder_path,
+            pytest_cache_folder_path,
+        ]:
             if os.path.exists(folder):
                 shutil.rmtree(folder)
                 print(f"{os.path.basename(folder)} Deleted")
@@ -88,19 +95,23 @@ class TestRunner:
                 print(f"Error running command: {command}")
             except Exception as e:
                 print(f"An error occurred while running command: {command}")
-        
+
         if os.path.exists(pytest_report_path):
             with open(pytest_report_path, "r") as f:
                 html_content = f.read()
             tree = etree.HTML(html_content)
-            failed_count = str(tree.xpath("//span[@class='failed']/text()")[0]).split(" ")[0]
-            passed_count = str(tree.xpath("//span[@class='passed']/text()")[0]).split(" ")[0]
-            skipped_count = str(tree.xpath("//span[@class='skipped']/text()")[0]).split(" ")[0]
-            print(f"\033[96mTest Result\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m")
-
-
-
-
-            
-
-
+            completed_time = str(tree.xpath("(//h1[@id='title']/following-sibling::p)[1]/text()")[0]).split(
+                "on "
+            )[1].split(" by")[0]
+            failed_count = str(tree.xpath("//span[@class='failed']/text()")[0]).split(
+                " "
+            )[0]
+            passed_count = str(tree.xpath("//span[@class='passed']/text()")[0]).split(
+                " "
+            )[0]
+            skipped_count = str(tree.xpath("//span[@class='skipped']/text()")[0]).split(
+                " "
+            )[0]
+            print(
+                f"\033[96mTest Execution Summary : {completed_time}\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m"
+            )

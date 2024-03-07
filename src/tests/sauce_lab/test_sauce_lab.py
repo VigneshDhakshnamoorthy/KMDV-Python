@@ -40,7 +40,7 @@ class TestSauceLab:
         homePage = HomePage(selenium)
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         
-    @pytest.mark.smoke
+    @pytest.mark.dev
     @pytest.mark.regression
     def test_sauce_lab_4(self, selenium: SeleniumUtil) -> None:
         homePage = HomePage(selenium)
