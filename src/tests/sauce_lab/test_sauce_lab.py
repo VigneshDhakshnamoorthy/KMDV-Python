@@ -34,3 +34,23 @@ class TestSauceLab:
         assert homePage.get_cart_count() == (
             2 if selenium.get_browser_name().lower() == "chrome" else 1
         ), "Assertion error message for test_sauce_lab_2"
+        
+    @pytest.mark.skip
+    def test_sauce_lab_3(self, selenium: SeleniumUtil) -> None:
+        homePage = HomePage(selenium)
+        homePage.open_app().login_to_app("standard_user", "secret_sauce")
+        
+    @pytest.mark.smoke
+    @pytest.mark.regression
+    def test_sauce_lab_4(self, selenium: SeleniumUtil) -> None:
+        homePage = HomePage(selenium)
+        homePage.open_app().login_to_app("standard_user", "secret_sauce")
+        homePage.add_product(
+            "Sauce Labs Backpack"
+            if selenium.get_browser_name().lower() == "chrome"
+            else "Sauce Labs Onesie"
+        )
+        selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
+        assert homePage.get_cart_count() == (
+            1 if selenium.get_browser_name().lower() == "chrome" else 2
+        ), "Assertion error message for test_sauce_lab_1"
