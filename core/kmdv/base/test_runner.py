@@ -47,6 +47,7 @@ class TestRunner:
         pytestReport = "pytest.html"
         allure_result_path = os.path.join(project_dir, allureResult)
         allure_report_path = os.path.join(project_dir, allureReport)
+        pytest_cache_folder_path = os.path.join(project_dir, ".pytest_cache")
         pytest_report_folder_path = os.path.join(project_dir, pytestReportFolder)
         pytest_report_path = os.path.join(pytest_report_folder_path, pytestReport)
         allure_history_source = os.path.join(project_dir, allureReport, "history")
@@ -56,21 +57,18 @@ class TestRunner:
         tag = BrowserConfig.getTag()
         commands = [
             (
-                f"pytest -s --alluredir={allureResult} --html={pytest_report_path} -n {parallel_count}"
+                f"pytest -s --alluredir={allureResult} --html={pytest_report_path} --self-contained-html -n {parallel_count}"
                 if tag == ""
-                else f"pytest -s --alluredir={allureResult} --html={pytest_report_path} -n {parallel_count} -k {tag}"
+                else f"pytest -s --alluredir={allureResult} --html={pytest_report_path} --self-contained-html -n {parallel_count} -k {tag}"
             ),
             f"allure generate {allureResult} --clean",
             f"allure open",
         ]
 
-        if os.path.exists(allure_result_path):
-            shutil.rmtree(allure_result_path)
-            print("Allure Result Folder Deleted")
-        
-        if os.path.exists(pytest_report_folder_path):
-            shutil.rmtree(pytest_report_folder_path)
-            print("Pytest Report Folder Deleted")
+        for folder in [allure_result_path,pytest_report_folder_path,pytest_cache_folder_path]:
+            if os.path.exists(folder):
+                shutil.rmtree(folder)
+                print(f"{os.path.basename(folder)} Deleted")
 
         for command in commands:
             if "generate" in command:
@@ -98,7 +96,7 @@ class TestRunner:
             failed_count = str(tree.xpath("//span[@class='failed']/text()")[0]).split(" ")[0]
             passed_count = str(tree.xpath("//span[@class='passed']/text()")[0]).split(" ")[0]
             skipped_count = str(tree.xpath("//span[@class='skipped']/text()")[0]).split(" ")[0]
-            print(f"Passed - {passed_count} ; Failed - {failed_count} ; Skipped - {skipped_count}")
+            print(f"\033[96mTest Result\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m")
 
 
 
