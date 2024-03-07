@@ -32,5 +32,5 @@ class TestSauceLab:
         )
         selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
         assert homePage.get_cart_count() == (
-            1 if selenium.get_browser_name().lower() == "chrome" else 2
+            2 if selenium.get_browser_name().lower() == "chrome" else 1
         ), "Assertion error message for test_sauce_lab_2"

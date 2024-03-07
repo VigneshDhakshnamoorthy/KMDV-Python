@@ -23,6 +23,7 @@ class SeleniumUtil:
             self.driver = BrowserUtil(self.browserName).get_driver()
             self.driver.implicitly_wait(self.waitTime)
             self.driver.maximize_window()
+            self.driver.download_file
         except NoSuchWindowException:
             self.driver.quit()
             self.driver = BrowserUtil(self.browserName).get_driver()
@@ -57,6 +58,10 @@ class SeleniumUtil:
     def quit(self) -> "SeleniumUtil":
         self.driver.quit()
         return self
+    
+    def close(self) -> "SeleniumUtil":
+        self.driver.close()
+        return self
 
     def wait_until(self, method: Callable):
         return WebDriverWait(
@@ -71,6 +76,9 @@ class SeleniumUtil:
 
     def get_element_text(self, by: By) -> str:
         return self.find_element(by).text
+
+    def get_element_attribute(self, by: By, attribute: str) -> str:
+        return self.find_element(by).get_attribute(attribute)
 
     def find_elements(self, by: By) -> list[WebElement]:
         return self.wait_until(lambda wd: wd.find_elements(*by))
@@ -115,12 +123,20 @@ class SeleniumUtil:
         self.find_element(by).send_keys(value + Keys.RETURN)
         return self
 
+    def is_enabled(self, by: By) -> bool:
+        return self.find_element(by).is_enabled()
+
+    def is_displayed(self, by: By) -> bool:
+        return self.find_element(by).is_displayed()
+
+    def is_selected(self, by: By) -> bool:
+        return self.find_element(by).is_selected()
+
     def switch_default(self) -> "SeleniumUtil":
         self.get_driver().switch_to.default_content()
         return self
 
     def switch_frame(self, frame: str | int) -> "SeleniumUtil":
-        self.switch_default()
         self.get_driver().switch_to.frame(frame)
         return self
 
@@ -136,9 +152,15 @@ class SeleniumUtil:
         self.actionChains.context_click(self.find_element(by)).perform()
         return self
 
+    def current_window_handle(self) -> str:
+        return self.get_driver().current_window_handle
+
+    def window_handles(self) -> list[str]:
+        return self.get_driver().window_handles
+
     def switch_to_child_window(self) -> "SeleniumUtil":
-        parent_window: str = self.get_driver().current_window_handle
-        all_windows: list[str] = self.get_driver().window_handles
+        parent_window: str = self.current_window_handle()
+        all_windows: list[str] = self.window_handles()
         for window_handle in all_windows:
             if not window_handle == parent_window:
                 self.get_driver().switch_to.window(window_handle)
@@ -214,15 +236,3 @@ class SeleniumUtil:
 
     def wait_staleness_of(self, by: By) -> bool:
         return self.wait_until(EC.staleness_of(self.find_element(by)))
-
-    def is_enabled(self, by: By) -> bool:
-        return self.find_element(by).is_enabled()
-    
-    def is_enabled(self, by: By, attribute:str) -> str:
-        return self.find_element(by).get_attribute(attribute)
-        
-    def is_displayed(self, by: By) -> bool:
-        return self.find_element(by).is_displayed()
-
-    def is_selected(self, by: By) -> bool:
-        return self.find_element(by).is_selected()

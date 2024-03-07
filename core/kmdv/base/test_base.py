@@ -1,14 +1,10 @@
 import sys
-from time import sleep
 import pandas as pd
 import pytest
 from core.kmdv.config.browser_config import BrowserConfig
-from pytest import StashKey, CollectReport
-from typing import Dict
 from core.kmdv.base.test_results import TestResults
 from core.kmdv.util.selenium_util import SeleniumUtil
 
-phase_report_key = StashKey[Dict[str, CollectReport]]()
 test_results = {}
 
 sys.stdout = sys.stderr
@@ -41,16 +37,27 @@ def getBrowserList() -> list[str]:
         return BrowserConfig.getDefaultBrowser()
 
 
+def get_browser_name_from_excel(method_name:str) -> str:
+    if "[" in method_name:
+        method_name = method_name.split("[")[0]
+
+    df = pd.read_excel("resource/data/Book1.xlsx")
+    browser_name = df[df["TestCaseName"].str.contains(method_name, case=False)][
+        "Browser"
+    ].values[0]
+    return browser_name
+
+
 @pytest.fixture(params=getBrowserList(), autouse=True)
-def selenium(request) -> "SeleniumUtil": # type: ignore
+def selenium(request: pytest.FixtureRequest) -> "SeleniumUtil":  # type: ignore
     method_name = request.node.name
     try:
         if BrowserConfig.isExcelData():
-            browser_name:str = get_browser_name_from_excel(method_name)
+            browser_name: str = get_browser_name_from_excel(method_name)
         else:
-            browser_name:str = request.param
+            browser_name: str = request.param
     except:
-        browser_name:str = request.param
+        browser_name: str = request.param
     sel = SeleniumUtil(browser_name)
     sel.log(f"Opening : {browser_name.title()} Browser")
     yield sel
@@ -58,16 +65,4 @@ def selenium(request) -> "SeleniumUtil": # type: ignore
         sel.get_screenshot("screen shot | failure")
     sel.quit()
     sel.log(f"Closing : {browser_name.title()} Browser")
-    sleep(2)
-
-
-def get_browser_name_from_excel(method_name) -> str:
-    if '[' in method_name:
-        method_name = method_name.split('[')[0]   
-         
-    df = pd.read_excel("resource/data/Book1.xlsx")
-    browser_name = df[df["TestCaseName"].str.contains(method_name, case=False)][
-        "Browser"
-    ].values[0]
-    return browser_name
-
+    sel.sleep_for_seconds(2)
