@@ -53,3 +53,7 @@ class BrowserConfig:
     @staticmethod
     def getURL() -> str:
         return BrowserConfig.config.get("BrowserConfig", "URL")
+    
+    @staticmethod
+    def isPrintCMD() -> bool:
+        return BrowserConfig.config.getboolean("BrowserConfig", "PrintCMD")

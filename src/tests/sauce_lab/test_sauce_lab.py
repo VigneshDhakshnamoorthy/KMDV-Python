@@ -12,12 +12,12 @@ class TestSauceLab:
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         homePage.add_product(
             "Sauce Labs Onesie"
-            if selenium.get_browser_name().lower() == "chrome"
+            if "chrome" in selenium.get_browser_name().lower()
             else "Sauce Labs Backpack"
         )
         selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
         assert homePage.get_cart_count() == (
-            1 if selenium.get_browser_name().lower() == "chrome" else 2
+            1 if "chrome" in selenium.get_browser_name().lower() else 2
         ), "Assertion error message for test_sauce_lab_1"
 
     @pytest.mark.regression
@@ -27,12 +27,12 @@ class TestSauceLab:
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         homePage.add_product(
             "Sauce Labs Backpack"
-            if selenium.get_browser_name().lower() == "chrome"
+            if "chrome" in selenium.get_browser_name().lower()
             else "Sauce Labs Onesie"
         )
         selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
         assert homePage.get_cart_count() == (
-            2 if selenium.get_browser_name().lower() == "chrome" else 1
+            2 if "chrome" in selenium.get_browser_name().lower() else 1
         ), "Assertion error message for test_sauce_lab_2"
         
     @pytest.mark.skip
@@ -47,10 +47,10 @@ class TestSauceLab:
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         homePage.add_product(
             "Sauce Labs Backpack"
-            if selenium.get_browser_name().lower() == "chrome"
+            if "chrome" in selenium.get_browser_name().lower()
             else "Sauce Labs Onesie"
         )
         selenium.get_element_screenshot(homePage.CART_ITEM_COUNT, "element screen shot")
         assert homePage.get_cart_count() == (
-            1 if selenium.get_browser_name().lower() == "chrome" else 2
+            1 if "chrome" in selenium.get_browser_name().lower() else 2
         ), "Assertion error message for test_sauce_lab_1"
