@@ -1,11 +1,28 @@
+from enum import Enum
 from selenium import webdriver
 from selenium.webdriver import Chrome, Edge, Firefox
 
+class BrowserName(Enum):
+    CHROME:str = 'Chrome'
+    FIREFOX:str = 'Firefox'
+    EDGE:str = 'Edge'
+    
+    @staticmethod
+    def keys():
+        return list(BrowserName.__members__.keys())
+
+    @staticmethod
+    def values():
+        return list(BrowserName.__members__.values())
+    
+    @classmethod
+    def get_value(cls, key:str):
+        return cls[key.upper()].value if key.upper() in cls.__members__ else None
 
 class BrowserUtil:
     
-    def __init__(self, browserName) -> None:
-        self.browserName = browserName
+    def __init__(self, browserName:str) -> None:
+        self.browserName = browserName.lower().strip()
 
     def get_driver(self) -> Chrome | Edge | Firefox:
         match self.browserName:

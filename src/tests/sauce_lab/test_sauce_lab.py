@@ -1,5 +1,6 @@
 import allure
 import pytest
+from core.kmdv.util.browser_util import BrowserName
 from core.kmdv.util.selenium_util import SeleniumUtil
 from pages.HomePage import HomePage
 from selenium.webdriver.common.by import By
@@ -59,7 +60,7 @@ class TestSauceLab:
     @pytest.mark.multi_instance
     def test_sauce_lab_5(self, selenium: SeleniumUtil) -> None:
         selenium.open("http://www.google.com")
-        selenium.create_driver_instance("bing")
+        selenium.create_driver_instance("bing","firefox")
         selenium.switch_driver_instance("bing")
         selenium.open("https://www.bing.com/")
         selenium.switch_driver_instance()
@@ -67,3 +68,7 @@ class TestSauceLab:
         selenium.switch_driver_instance("bing")
         selenium.type_enter((By.XPATH, "//*[@id='sb_form_q']"),"Vignesh Dhakshnamoorthy")
         selenium.sleep_for_seconds(5)
+        selenium.switch_driver_instance().back()
+        selenium.switch_driver_instance("bing").back()
+
+        selenium.sleep_for_seconds(2)

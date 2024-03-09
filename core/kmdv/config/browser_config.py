@@ -30,17 +30,17 @@ class BrowserConfig:
     def getMultiBrowserList() -> list[str]:
         multiBrowserList = BrowserConfig.config.get("BrowserConfig", "MultiBrowserList").split(",")
         if not BrowserConfig.isHeadless():
-            return [browser.lower().strip() for browser in multiBrowserList]
+            return [browser for browser in multiBrowserList]
         else:
-            return [f"{browser.lower().strip()}headless" for browser in multiBrowserList]
+            return [f"{browser}headless" for browser in multiBrowserList]
 
     @staticmethod
     def getDefaultBrowser() -> list[str]:
         defaultBrowser = BrowserConfig.config.get("BrowserConfig", "DefaultBrowser")
         if not BrowserConfig.isHeadless():
-            return [defaultBrowser.lower().strip()]
+            return [defaultBrowser]
         else:
-            return [f"{defaultBrowser.lower().strip()}headless"]
+            return [f"{defaultBrowser}headless"]
 
     @staticmethod
     def getParallelCount() -> str:

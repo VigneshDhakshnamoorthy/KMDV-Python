@@ -2,7 +2,7 @@ from typing import Callable, List, Literal, Union
 import allure
 import pytest
 from core.kmdv.config.customException import ElementNotFound
-from core.kmdv.util.browser_util import BrowserUtil
+from core.kmdv.util.browser_util import BrowserName, BrowserUtil
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -23,7 +23,7 @@ class SeleniumUtil:
         self.waitTime = 15
         self.driver_instance = {}
         self.driver = BrowserUtil(self.browserName).get_driver()
-        self.driver_instance["Default"] = self.driver
+        self.driver_instance["Default"] = [self.browserName,self.driver]
 
     def log(self, message) -> "SeleniumUtil":
         print(f"{self.methodName} | {message}")
@@ -41,18 +41,29 @@ class SeleniumUtil:
     def get_driver(self) -> Chrome | Edge | Firefox:
         return self.driver
 
-    def create_driver_instance(self, name: str) -> None:
-        self.driver_instance[name] = BrowserUtil(self.browserName).get_driver()
-
-    def switch_driver_instance(self, name: str = None) -> None:
-        if name is None:
-            self.driver = self.driver_instance["Default"]
+    def create_driver_instance(self, name: str, browser_name:str = None) -> "SeleniumUtil":
+        if browser_name is None:
+            self.driver_instance[name] = [self.browserName,BrowserUtil(self.browserName).get_driver()]
         else:
-            self.driver = self.driver_instance[name]
+            is_browser_name = BrowserName.get_value(browser_name)
+            if is_browser_name:
+                self.driver_instance[name] = [is_browser_name,BrowserUtil(is_browser_name).get_driver()]
+            else:
+                self.driver_instance[name] = [self.browserName,BrowserUtil(self.browserName).get_driver()]
+        return self
+
+
+    def switch_driver_instance(self, name: str = None) -> "SeleniumUtil":
+        if name is None:
+            self.driver = self.driver_instance["Default"][1]
+        else:
+            self.driver = self.driver_instance[name][1]
+        return self
+
 
     def get_driver_instance_name(self) -> str:
         for key, value in self.driver_instance.items():
-            if value == self.driver:
+            if value[1] == self.driver:
                 return key
 
     def open(self, url) -> "SeleniumUtil":
@@ -65,18 +76,16 @@ class SeleniumUtil:
                 instance = self.get_driver_instance_name()
                 print("Error : Browsing context has been discarded. Retrying...")
                 self.driver.quit()
-                self.driver = BrowserUtil(self.browserName).get_driver()
-                self.driver.implicitly_wait(self.waitTime)
-                self.driver.maximize_window()
-                self.driver_instance[instance] = self.driver
+                self.driver = BrowserUtil(self.driver_instance[instance][0]).get_driver()
+                self.driver_instance[instance] = [self.driver_instance[instance][0],self.driver]
 
         self.get_driver().get(url)
         if len(self.driver_instance) > 1:
             self.log(
-                f"Opening : {self.browserName.title()} / {self.get_driver_instance_name().title()} Browser Instance"
+                f"Opening : {self.driver_instance[self.get_driver_instance_name()][0].title()} / {self.get_driver_instance_name().title()} Browser Instance"
             )
         else:
-            self.log(f"Opening : {self.browserName.title()} Browser")
+            self.log(f"Opening : {self.driver_instance[self.get_driver_instance_name()][0].title()} Browser")
         return self
 
     def get_title(self) -> str:
@@ -88,16 +97,19 @@ class SeleniumUtil:
             self.get_driver().quit()
             if len(self.driver_instance) > 1:
                 self.log(
-                    f"Closing : {self.browserName.title()} / {instance.title()} Browser Instance"
+                    f"Closing : {self.driver_instance[instance][0].title()} / {instance.title()} Browser Instance"
                 )
             else:
-                self.log(f"Closing : {self.browserName.title()} Browser")
+                self.log(f"Closing : {self.driver_instance[instance][0].title()} Browser")
         return self
 
     def close(self) -> "SeleniumUtil":
         self.get_driver().close()
         return self
 
+    def back(self) -> "SeleniumUtil":
+        self.get_driver().back()
+        
     def wait_until(self, method: Callable):
         return WebDriverWait(
             driver=self.get_driver(), timeout=self.waitTime, poll_frequency=1
