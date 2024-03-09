@@ -2,6 +2,7 @@ import allure
 import pytest
 from core.kmdv.util.selenium_util import SeleniumUtil
 from pages.HomePage import HomePage
+from selenium.webdriver.common.by import By
 
 @allure.suite("Sauce Labs Tests")
 class TestSauceLab:
@@ -41,7 +42,6 @@ class TestSauceLab:
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
         
     @pytest.mark.dev
-    @pytest.mark.regression
     def test_sauce_lab_4(self, selenium: SeleniumUtil) -> None:
         homePage = HomePage(selenium)
         homePage.open_app().login_to_app("standard_user", "secret_sauce")
@@ -54,3 +54,16 @@ class TestSauceLab:
         assert homePage.get_cart_count() == (
             1 if "chrome" in selenium.get_browser_name().lower() else 2
         ), "Assertion error message for test_sauce_lab_1"
+
+
+    @pytest.mark.multi_instance
+    def test_sauce_lab_5(self, selenium: SeleniumUtil) -> None:
+        selenium.open("http://www.google.com")
+        selenium.create_driver_instance("bing")
+        selenium.switch_driver_instance("bing")
+        selenium.open("https://www.bing.com/")
+        selenium.switch_driver_instance()
+        selenium.type_enter((By.XPATH, "//*[@name='q']"),"Vignesh Dhakshnamoorthy")
+        selenium.switch_driver_instance("bing")
+        selenium.type_enter((By.XPATH, "//*[@id='sb_form_q']"),"Vignesh Dhakshnamoorthy")
+        selenium.sleep_for_seconds(5)

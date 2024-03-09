@@ -40,7 +40,7 @@ class TestRunner:
 
     @staticmethod
     def json_report(
-        file_name, completed_time, passed_count, failed_count, skipped_count
+        file_name, completed_time, passed_count, failed_count, skipped_count, test_case_list
     ):
         date_complete = completed_time.split(" - ")[0]
         time_complete = completed_time.split(" - ")[1]
@@ -58,10 +58,22 @@ class TestRunner:
             "Passed": passed_count,
             "Failed": failed_count,
             "Skipped": skipped_count,
+            "Testcases": test_case_list
         }
 
         with open(file_name, "w") as file:
             json.dump(data, file, indent=4)
+
+    @staticmethod
+    def splitString(string_value:str,start:str, end:str= None):
+        if end is None:
+            return string_value.split(start)[0]
+        try:
+            start_index = string_value.index(start) + len(start)
+            end_index = string_value.index(end)
+            return string_value[start_index:end_index]
+        except ValueError :
+            return string_value
 
     @staticmethod
     def run_session():
@@ -157,13 +169,23 @@ class TestRunner:
                 if "skipped" in json_report["report"]["summary"]
                 else 0
             )
+            test_case_list_source =  json_report["report"]['tests']
+            test_case_list_target = {}
+            for test_case in test_case_list_source:
+                test_case_outcome:str = test_case['outcome']
+                test_case_name:str = test_case['name']
+                test_case_name_list:list[str] = test_case_name.split('::')
+                test_case_list_target[f"{test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]}"] = test_case_outcome.title()
+                print(f"{test_case_outcome} - {test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]} - {TestRunner.splitString(test_case_name,'[',']')}")
             TestRunner.json_report(
                 pytest_history_path,
                 completed_time,
                 passed_count,
                 failed_count,
                 skipped_count,
+                {k: test_case_list_target[k] for k in sorted(test_case_list_target)}
             )
+            
             print(
                 f"\033[96mTest Execution Summary : {completed_time}\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m"
             )

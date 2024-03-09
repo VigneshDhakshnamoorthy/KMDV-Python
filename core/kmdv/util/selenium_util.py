@@ -17,24 +17,16 @@ from selenium.webdriver.common.alert import Alert
 
 
 class SeleniumUtil:
-    def __init__(self, browserName) -> None:
-        self.browserName = browserName
+    def __init__(self, browser_name:str, method_name:str) -> None:
+        self.browserName = browser_name
+        self.methodName = method_name
         self.waitTime = 15
-        try:
-            self.driver = BrowserUtil(self.browserName).get_driver()
-            self.driver.implicitly_wait(self.waitTime)
-            self.driver.maximize_window()
-            self.driver.download_file
-        except NoSuchWindowException:
-            self.driver.quit()
-            self.driver = BrowserUtil(self.browserName).get_driver()
-            self.driver.implicitly_wait(self.waitTime)
-            self.driver.maximize_window()
-            print("Error : Browsing context has been discarded. Retrying...")
-        self.actionChains = ActionChains(self.driver)
+        self.driver_instance = {}
+        self.driver = BrowserUtil(self.browserName).get_driver()
+        self.driver_instance["Default"] = self.driver
 
     def log(self, message) -> "SeleniumUtil":
-        print(message)
+        print(f"{self.methodName} | {message}")
         with allure.step(message):
             pass
         return self
@@ -49,24 +41,66 @@ class SeleniumUtil:
     def get_driver(self) -> Chrome | Edge | Firefox:
         return self.driver
 
+    def create_driver_instance(self, name: str) -> None:
+        self.driver_instance[name] = BrowserUtil(self.browserName).get_driver()
+
+    def switch_driver_instance(self, name: str = None) -> None:
+        if name is None:
+            self.driver = self.driver_instance["Default"]
+        else:
+            self.driver = self.driver_instance[name]
+
+    def get_driver_instance_name(self) -> str:
+        for key, value in self.driver_instance.items():
+            if value == self.driver:
+                return key
+
     def open(self, url) -> "SeleniumUtil":
-        self.driver.get(url)
+        while True:
+            try:
+                self.driver.implicitly_wait(self.waitTime)
+                self.driver.maximize_window()
+                break
+            except NoSuchWindowException:
+                instance = self.get_driver_instance_name()
+                print("Error : Browsing context has been discarded. Retrying...")
+                self.driver.quit()
+                self.driver = BrowserUtil(self.browserName).get_driver()
+                self.driver.implicitly_wait(self.waitTime)
+                self.driver.maximize_window()
+                self.driver_instance[instance] = self.driver
+
+        self.get_driver().get(url)
+        if len(self.driver_instance) > 1:
+            self.log(
+                f"Opening : {self.browserName.title()} / {self.get_driver_instance_name().title()} Browser Instance"
+            )
+        else:
+            self.log(f"Opening : {self.browserName.title()} Browser")
         return self
 
     def get_title(self) -> str:
-        return self.driver.title
+        return self.get_driver().title
 
     def quit(self) -> "SeleniumUtil":
-        self.driver.quit()
+        for instance in self.driver_instance:
+            self.switch_driver_instance(instance)
+            self.get_driver().quit()
+            if len(self.driver_instance) > 1:
+                self.log(
+                    f"Closing : {self.browserName.title()} / {instance.title()} Browser Instance"
+                )
+            else:
+                self.log(f"Closing : {self.browserName.title()} Browser")
         return self
-    
+
     def close(self) -> "SeleniumUtil":
-        self.driver.close()
+        self.get_driver().close()
         return self
 
     def wait_until(self, method: Callable):
         return WebDriverWait(
-            driver=self.driver, timeout=self.waitTime, poll_frequency=1
+            driver=self.get_driver(), timeout=self.waitTime, poll_frequency=1
         ).until(method)
 
     def find_element(self, by: By) -> WebElement:
@@ -146,11 +180,11 @@ class SeleniumUtil:
         return self
 
     def hover(self, by: By) -> "SeleniumUtil":
-        self.actionChains.move_to_element(self.find_element(by)).perform()
+        ActionChains(self.driver).move_to_element(self.find_element(by)).perform()
         return self
 
     def right_click(self, by: By) -> "SeleniumUtil":
-        self.actionChains.context_click(self.find_element(by)).perform()
+        ActionChains(self.driver).context_click(self.find_element(by)).perform()
         return self
 
     def current_window_handle(self) -> str:

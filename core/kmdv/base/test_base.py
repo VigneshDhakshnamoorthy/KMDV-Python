@@ -58,11 +58,9 @@ def selenium(request: pytest.FixtureRequest) -> "SeleniumUtil":  # type: ignore
             browser_name: str = request.param
     except:
         browser_name: str = request.param
-    sel = SeleniumUtil(browser_name)
-    sel.log(f"Opening : {browser_name.title()} Browser")
+    sel = SeleniumUtil(browser_name, method_name.split('[')[0])
     yield sel
     if TestResults.get_result(method_name) == "failed":
         sel.get_screenshot("screen shot | failure")
     sel.quit()
-    sel.log(f"Closing : {browser_name.title()} Browser")
     sel.sleep_for_seconds(2)
