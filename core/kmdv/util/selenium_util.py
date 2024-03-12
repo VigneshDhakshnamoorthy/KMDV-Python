@@ -1,6 +1,7 @@
 from typing import Callable, List, Literal, Union
 import allure
 import pytest
+from core.kmdv.config.browser_config import BrowserConfig
 from core.kmdv.config.customException import ElementNotFound
 from core.kmdv.util.browser_util import BrowserName, BrowserUtil
 from selenium.webdriver.support.wait import WebDriverWait
@@ -26,7 +27,8 @@ class SeleniumUtil:
         self.driver_instance["Default"] = [self.browserName,self.driver]
 
     def log(self, message) -> "SeleniumUtil":
-        print(f"{self.methodName} | {message}")
+        tc_name =f"{self.methodName} | " if BrowserConfig.isPrintCMD() else ""
+        print(f"{tc_name}{message}")
         with allure.step(message):
             pass
         return self
@@ -215,8 +217,9 @@ class SeleniumUtil:
         return self
 
     def get_screenshot(self, screenshotName: str) -> "SeleniumUtil":
+        screen_shot:bytes = self.get_driver().get_screenshot_as_png()
         allure.attach(
-            self.get_driver().get_screenshot_as_png(),
+            screen_shot,
             name=screenshotName,
             attachment_type=AttachmentType.PNG,
         )

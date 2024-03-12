@@ -84,6 +84,7 @@ class TestRunner:
         pytestReportFolder = "pytest-report"
         pytest_html_report = "pytest.html"
         pytest_json_report = "pytest.json"
+        pytest_xml_report = "pytest.xml"
         pytestHistory = "history.json"
         allure_result_path = os.path.join(project_dir, allureResult)
         allure_report_path = os.path.join(project_dir, allureReport)
@@ -94,6 +95,9 @@ class TestRunner:
         )
         pytest_json_report_path = os.path.join(
             pytest_report_folder_path, pytest_json_report
+        )
+        pytest_xml_report_path = os.path.join(
+            pytest_report_folder_path, pytest_xml_report
         )
         pytest_history_path = os.path.join(pytest_report_folder_path, pytestHistory)
         allure_history_source = os.path.join(project_dir, allureReport, "history")
@@ -110,7 +114,7 @@ class TestRunner:
         PrintCMD = "no" if BrowserConfig.isPrintCMD() else "sys"
         commands = [
             (
-                f"pytest -s --alluredir={allureResult} --html={pytest_html_report_path} --self-contained-html --json={pytest_json_report_path} {parallel_count_command} {tag_command} --capture={PrintCMD}"
+                f"pytest -s --alluredir={allureResult} --html={pytest_html_report_path} --self-contained-html --json={pytest_json_report_path} --junitxml={pytest_xml_report_path} {parallel_count_command} {tag_command} --capture={PrintCMD} --tb=short"
             ),
             f"allure generate {allureResult} --clean",
             f"allure open",
