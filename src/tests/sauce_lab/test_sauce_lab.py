@@ -1,6 +1,5 @@
 import allure
 import pytest
-from core.kmdv.util.browser_util import BrowserName
 from core.kmdv.util.selenium_util import SeleniumUtil
 from pages.HomePage import HomePage
 from selenium.webdriver.common.by import By
