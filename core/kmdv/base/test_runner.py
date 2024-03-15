@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import os
+import re
 import shutil
 import subprocess
 import psutil
@@ -17,7 +18,6 @@ class TestRunner:
             for name in webdriver_names:
                 if name in process.info["name"]:
                     psutil.Process(process.info["pid"]).terminate()
-                    print(name)
 
     @staticmethod
     def remove_cache_directories(directory, folder_name):
@@ -40,7 +40,12 @@ class TestRunner:
 
     @staticmethod
     def json_report(
-        file_name, completed_time, passed_count, failed_count, skipped_count, test_case_list
+        file_name,
+        completed_time,
+        passed_count,
+        failed_count,
+        skipped_count,
+        test_case_list,
     ):
         date_complete = completed_time.split(" - ")[0]
         time_complete = completed_time.split(" - ")[1]
@@ -58,23 +63,38 @@ class TestRunner:
             "Passed": passed_count,
             "Failed": failed_count,
             "Skipped": skipped_count,
-            "Testcases": test_case_list
+            "Testcases": test_case_list,
         }
 
         with open(file_name, "w") as file:
             json.dump(data, file, indent=4)
 
     @staticmethod
-    def splitString(string_value:str,start:str, end:str= None):
+    def splitString(string_value: str, start: str, end: str = None):
         if end is None:
             return string_value.split(start)[0]
         try:
             start_index = string_value.index(start) + len(start)
             end_index = string_value.index(end)
             return string_value[start_index:end_index]
-        except ValueError :
+        except ValueError:
             return string_value
 
+    @staticmethod
+    def add_numbers_to_duplicates(word_list):
+        word_count = {}
+        result = []
+
+        for word in word_list:
+            if word in word_count:
+                word_count[word] += 1
+                new_word = f"{word}.{word_count[word]}"
+                result.append(new_word)
+            else:
+                word_count[word] = 0
+                result.append(word)
+
+        return result
     @staticmethod
     def run_session():
         file_dir = os.path.dirname(os.path.abspath(__file__))
@@ -113,11 +133,11 @@ class TestRunner:
         tag_command = "" if tag == "" else f"-k {tag}"
         PrintCMD = "no" if BrowserConfig.isPrintCMD() else "sys"
         commands = [
-            (
-                f"pytest -s --alluredir={allureResult} --html={pytest_html_report_path} --self-contained-html --json={pytest_json_report_path} --junitxml={pytest_xml_report_path} {parallel_count_command} {tag_command} --capture={PrintCMD} --tb=short"
-            ),
-            f"allure generate {allureResult} --clean",
-            f"allure open",
+            # (
+            #     f"pytest -s --alluredir={allureResult} --html={pytest_html_report_path} --self-contained-html --json={pytest_json_report_path} --junitxml={pytest_xml_report_path} {parallel_count_command} {tag_command} --capture={PrintCMD} --tb=line"
+            # ),
+            # f"allure generate {allureResult} --clean",
+            # f"allure open",
         ]
 
         for folder in [
@@ -173,23 +193,38 @@ class TestRunner:
                 if "skipped" in json_report["report"]["summary"]
                 else 0
             )
-            test_case_list_source =  json_report["report"]['tests']
+            test_case_list_source = json_report["report"]["tests"]
             test_case_list_target = {}
             for test_case in test_case_list_source:
-                test_case_outcome:str = test_case['outcome']
-                test_case_name:str = test_case['name']
-                test_case_name_list:list[str] = test_case_name.split('::')
-                test_case_list_target[f"{test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]}"] = test_case_outcome.title()
-                print(f"{test_case_outcome} - {test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]} - {TestRunner.splitString(test_case_name,'[',']')}")
+                test_case_outcome: str = test_case["outcome"]
+                log_list = ["skipped"]
+                if not test_case_outcome == "skipped":
+                    log_list.clear()
+                    call_log = test_case["call"]["stdout"].split("\n")[:-1]
+                    teardown_log = test_case["teardown"]["stdout"].split("\n")[:-1]
+                    log_list.extend(call_log)
+                    log_list.extend(teardown_log)
+   
+                test_case_name: str = test_case["name"]
+                test_case_name_list: list[str] = test_case_name.split("::",1)
+                test_source_list = re.split(r'[\\\/]', test_case_name_list[0])
+                folder_name = "/".join(test_source_list[:-1])
+                file_name = test_source_list[-1]
+                reason =  [] if not test_case_outcome == "failed" else re.split(r'[\n\t]', test_case["call"]["longrepr"])
+                reason = [element.strip() for element in reason if element.strip() != ""]
+                test_case_list_target[
+                    f"{test_case_name_list[-1].replace('::','.').split('[')[0]}"
+                ] = {"Folder":folder_name,"File":file_name,"Status": test_case_outcome.title(), "Log": log_list, "Reason" : reason}
+                # print(f"{test_case_outcome} - {test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]} - {TestRunner.splitString(test_case_name,'[',']')}")
             TestRunner.json_report(
                 pytest_history_path,
                 completed_time,
                 passed_count,
                 failed_count,
                 skipped_count,
-                {k: test_case_list_target[k] for k in sorted(test_case_list_target)}
+                {k: test_case_list_target[k] for k in sorted(test_case_list_target)},
             )
-            
+
             print(
                 f"\033[96mTest Execution Summary : {completed_time}\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m"
             )

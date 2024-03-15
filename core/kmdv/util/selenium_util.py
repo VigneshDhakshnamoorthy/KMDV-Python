@@ -15,19 +15,20 @@ from allure_commons.types import AttachmentType
 from time import sleep
 from selenium.common.exceptions import NoSuchWindowException
 from selenium.webdriver.common.alert import Alert
+from selenium.webdriver.support.ui import Select
 
 
 class SeleniumUtil:
-    def __init__(self, browser_name:str, method_name:str) -> None:
+    def __init__(self, browser_name: str, method_name: str) -> None:
         self.browserName = browser_name
         self.methodName = method_name
         self.waitTime = 15
         self.driver_instance = {}
         self.driver = BrowserUtil(self.browserName).get_driver()
-        self.driver_instance["Default"] = [self.browserName,self.driver]
+        self.driver_instance["Default"] = [self.browserName, self.driver]
 
     def log(self, message) -> "SeleniumUtil":
-        tc_name =f"{self.methodName} | " if BrowserConfig.isPrintCMD() else ""
+        tc_name = f"{self.methodName} | " if BrowserConfig.isPrintCMD() else ""
         print(f"{tc_name}{message}")
         with allure.step(message):
             pass
@@ -43,17 +44,27 @@ class SeleniumUtil:
     def get_driver(self) -> Chrome | Edge | Firefox:
         return self.driver
 
-    def create_driver_instance(self, name: str, browser_name:str = None) -> "SeleniumUtil":
+    def create_driver_instance(
+        self, name: str, browser_name: str = None
+    ) -> "SeleniumUtil":
         if browser_name is None:
-            self.driver_instance[name] = [self.browserName,BrowserUtil(self.browserName).get_driver()]
+            self.driver_instance[name] = [
+                self.browserName,
+                BrowserUtil(self.browserName).get_driver(),
+            ]
         else:
             is_browser_name = BrowserName.get_value(browser_name)
             if is_browser_name:
-                self.driver_instance[name] = [is_browser_name,BrowserUtil(is_browser_name).get_driver()]
+                self.driver_instance[name] = [
+                    is_browser_name,
+                    BrowserUtil(is_browser_name).get_driver(),
+                ]
             else:
-                self.driver_instance[name] = [self.browserName,BrowserUtil(self.browserName).get_driver()]
+                self.driver_instance[name] = [
+                    self.browserName,
+                    BrowserUtil(self.browserName).get_driver(),
+                ]
         return self
-
 
     def switch_driver_instance(self, name: str = None) -> "SeleniumUtil":
         if name is None:
@@ -61,7 +72,6 @@ class SeleniumUtil:
         else:
             self.driver = self.driver_instance[name][1]
         return self
-
 
     def get_driver_instance_name(self) -> str:
         for key, value in self.driver_instance.items():
@@ -78,8 +88,13 @@ class SeleniumUtil:
                 instance = self.get_driver_instance_name()
                 print("Error : Browsing context has been discarded. Retrying...")
                 self.driver.quit()
-                self.driver = BrowserUtil(self.driver_instance[instance][0]).get_driver()
-                self.driver_instance[instance] = [self.driver_instance[instance][0],self.driver]
+                self.driver = BrowserUtil(
+                    self.driver_instance[instance][0]
+                ).get_driver()
+                self.driver_instance[instance] = [
+                    self.driver_instance[instance][0],
+                    self.driver,
+                ]
 
         self.get_driver().get(url)
         if len(self.driver_instance) > 1:
@@ -87,7 +102,9 @@ class SeleniumUtil:
                 f"Opening : {self.driver_instance[self.get_driver_instance_name()][0].title()} / {self.get_driver_instance_name().title()} Browser Instance"
             )
         else:
-            self.log(f"Opening : {self.driver_instance[self.get_driver_instance_name()][0].title()} Browser")
+            self.log(
+                f"Opening : {self.driver_instance[self.get_driver_instance_name()][0].title()} Browser"
+            )
         return self
 
     def get_title(self) -> str:
@@ -102,7 +119,9 @@ class SeleniumUtil:
                     f"Closing : {self.driver_instance[instance][0].title()} / {instance.title()} Browser Instance"
                 )
             else:
-                self.log(f"Closing : {self.driver_instance[instance][0].title()} Browser")
+                self.log(
+                    f"Closing : {self.driver_instance[instance][0].title()} Browser"
+                )
         return self
 
     def close(self) -> "SeleniumUtil":
@@ -111,7 +130,7 @@ class SeleniumUtil:
 
     def back(self) -> "SeleniumUtil":
         self.get_driver().back()
-        
+
     def wait_until(self, method: Callable):
         return WebDriverWait(
             driver=self.get_driver(), timeout=self.waitTime, poll_frequency=1
@@ -217,7 +236,7 @@ class SeleniumUtil:
         return self
 
     def get_screenshot(self, screenshotName: str) -> "SeleniumUtil":
-        screen_shot:bytes = self.get_driver().get_screenshot_as_png()
+        screen_shot: bytes = self.get_driver().get_screenshot_as_png()
         allure.attach(
             screen_shot,
             name=screenshotName,
@@ -235,6 +254,39 @@ class SeleniumUtil:
 
     def clear(self, by: By) -> "SeleniumUtil":
         self.find_element(by).clear()
+        return self
+
+    def get_dropdown(self, by: By) -> Select:
+        return Select(self.find_element(by))
+
+    def select_by_visible_text(self, by: By, visible_text: str) -> "SeleniumUtil":
+        self.get_dropdown(by).select_by_visible_text(visible_text)
+        return self
+
+    def select_by_index(self, by: By, index: int) -> "SeleniumUtil":
+        self.get_dropdown(by).select_by_index(index)
+        return self
+
+    def select_by_value(self, by: By, value: str) -> "SeleniumUtil":
+        self.get_dropdown(by).select_by_value(value)
+        return self
+
+    def get_dropdown_options(self, by: By) -> List[WebElement]:
+        return self.get_dropdown(by).options
+
+    def get_dropdown_option_values(self, by: By) -> List[str]:
+        return [option.text for option in self.get_dropdown_options(by)]
+
+    def deselect_by_visible_text(self, by: By, visible_text: str) -> "SeleniumUtil":
+        self.get_dropdown(by).deselect_by_visible_text(visible_text)
+        return self
+
+    def deselect_by_index(self, by: By, index: int) -> "SeleniumUtil":
+        self.get_dropdown(by).deselect_by_index(index)
+        return self
+
+    def deselect_by_value(self, by: By, value: str) -> "SeleniumUtil":
+        self.get_dropdown(by).deselect_by_value(value)
         return self
 
     def switch_to_alert(self) -> Alert:
@@ -286,3 +338,17 @@ class SeleniumUtil:
 
     def wait_staleness_of(self, by: By) -> bool:
         return self.wait_until(EC.staleness_of(self.find_element(by)))
+
+    def is_element_present_in_any_frame(self, by: By) -> int | None:
+        iframes:list[WebElement] = self.find_elements((By.TAG_NAME, "iframe"))
+        print(len(iframes))
+        try:
+            for frame in iframes:
+                self.switch_frame(frame)
+                if self.find_elements(by):
+                    return i
+                self.switch_default()
+            return None
+        except Exception as e:
+            print("An error occurred:", str(e))
+            return None

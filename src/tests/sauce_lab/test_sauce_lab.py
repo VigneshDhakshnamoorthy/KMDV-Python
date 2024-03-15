@@ -36,11 +36,12 @@ class TestSauceLab:
             2 if "chrome" in selenium.get_browser_name().lower() else 1
         ), "Assertion error message for test_sauce_lab_2"
         
-    @pytest.mark.skip
+    @pytest.mark.single
     def test_sauce_lab_3(self, selenium: SeleniumUtil) -> None:
-        homePage = HomePage(selenium)
-        homePage.open_app().login_to_app("standard_user", "secret_sauce")
-        
+        selenium.open("https://www.globalsqa.com/demo-site/frames-and-windows/#iFrame")
+        selenium.sleep_for_seconds(2)
+        selenium.switch_frame(4)
+        selenium.click((By.XPATH, "//h3[text()='Selenium 3.0 Training']/ancestor::a")).sleep_for_seconds(10)
     @pytest.mark.dev
     def test_sauce_lab_4(self, selenium: SeleniumUtil) -> None:
         homePage = HomePage(selenium)
