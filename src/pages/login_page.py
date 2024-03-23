@@ -7,10 +7,9 @@ from core.kmdv.util.selenium_util import SeleniumUtil
 
 @dataclass
 class LoginPage:
-    selenium: SeleniumUtil
 
     def __init__(self, selenium: SeleniumUtil) -> None:
-        self.selenium = selenium
+        self.selenium: SeleniumUtil = selenium
 
     USER_NAME_INPUT: By = (By.ID, "user-name")
     PASSWORD_INPUT: By = (By.ID, "password")

@@ -3,15 +3,13 @@ from selenium.webdriver.common.by import By
 from core.kmdv.config.browser_config import BrowserConfig
 
 from core.kmdv.util.selenium_util import SeleniumUtil
-from pages.LoginPage import LoginPage
+from pages.login_page import LoginPage
 
 
 @dataclass
 class HomePage(LoginPage):
-    selenium: SeleniumUtil
-
     def __init__(self, selenium: SeleniumUtil) -> None:
-        self.selenium = selenium
+        self.selenium: SeleniumUtil = selenium
 
     CART_ITEM: By = (By.XPATH, "//a[@class='shopping_cart_link']")
     CART_ITEM_COUNT: By = (By.XPATH, "//span[@class='shopping_cart_badge']")
