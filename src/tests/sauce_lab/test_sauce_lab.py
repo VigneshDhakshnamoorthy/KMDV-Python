@@ -3,6 +3,7 @@ import pytest
 from core.kmdv.util.selenium_util import SeleniumUtil
 from pages.home_page import HomePage
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 
 @allure.suite("Sauce Labs Tests")
 class TestSauceLab:
@@ -38,10 +39,10 @@ class TestSauceLab:
         
     @pytest.mark.single
     def test_sauce_lab_3(self, selenium: SeleniumUtil) -> None:
-        selenium.open("https://www.globalsqa.com/demo-site/frames-and-windows/#iFrame")
+        selenium.open("https://demo.automationtesting.in/Frames.html")
         selenium.sleep_for_seconds(2)
-        selenium.switch_frame(4)
-        selenium.click((By.XPATH, "//h3[text()='Selenium 3.0 Training']/ancestor::a")).sleep_for_seconds(10)
+        selenium.click((By.XPATH, "//a[contains(text(),'Iframe with in an Iframe')]")).sleep_for_seconds(2)
+       
     @pytest.mark.dev
     def test_sauce_lab_4(self, selenium: SeleniumUtil) -> None:
         homePage = HomePage(selenium)

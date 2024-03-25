@@ -1,6 +1,5 @@
-from typing import Callable, List, Literal, Union
+from typing import Any, Callable, List, Literal, Union
 import allure
-import pytest
 from core.kmdv.config.browser_config import BrowserConfig
 from core.kmdv.config.customException import ElementNotFound
 from core.kmdv.util.browser_util import BrowserName, BrowserUtil
@@ -20,15 +19,15 @@ from selenium.webdriver.support.ui import Select
 
 class SeleniumUtil:
     def __init__(self, browser_name: str, method_name: str) -> None:
-        self.browserName = browser_name
-        self.methodName = method_name
+        self.browserName: str = browser_name
+        self.methodName: str = method_name
         self.waitTime = 15
-        self.driver_instance = {}
-        self.driver = BrowserUtil(self.browserName).get_driver()
+        self.driver_instance: dict = {}
+        self.driver: Chrome | Edge | Firefox = BrowserUtil(self.browserName).get_driver()
         self.driver_instance["Default"] = [self.browserName, self.driver]
 
     def log(self, message) -> "SeleniumUtil":
-        tc_name = f"{self.methodName} | " if BrowserConfig.isPrintCMD() else ""
+        tc_name: str = f"{self.methodName} | " if BrowserConfig.isPrintCMD() else ""
         print(f"{tc_name}{message}")
         with allure.step(message):
             pass
@@ -53,7 +52,7 @@ class SeleniumUtil:
                 BrowserUtil(self.browserName).get_driver(),
             ]
         else:
-            is_browser_name = BrowserName.get_value(browser_name)
+            is_browser_name: str | None = BrowserName.get_value(browser_name)
             if is_browser_name:
                 self.driver_instance[name] = [
                     is_browser_name,
@@ -85,7 +84,7 @@ class SeleniumUtil:
                 self.driver.maximize_window()
                 break
             except NoSuchWindowException:
-                instance = self.get_driver_instance_name()
+                instance: str = self.get_driver_instance_name()
                 print("Error : Browsing context has been discarded. Retrying...")
                 self.driver.quit()
                 self.driver = BrowserUtil(
@@ -131,7 +130,7 @@ class SeleniumUtil:
     def back(self) -> "SeleniumUtil":
         self.get_driver().back()
 
-    def wait_until(self, method: Callable):
+    def wait_until(self, method: Callable) -> Any:
         return WebDriverWait(
             driver=self.get_driver(), timeout=self.waitTime, poll_frequency=1
         ).until(method)
@@ -339,16 +338,20 @@ class SeleniumUtil:
     def wait_staleness_of(self, by: By) -> bool:
         return self.wait_until(EC.staleness_of(self.find_element(by)))
 
-    def is_element_present_in_any_frame(self, by: By) -> int | None:
-        iframes:list[WebElement] = self.find_elements((By.TAG_NAME, "iframe"))
-        print(len(iframes))
-        try:
-            for frame in iframes:
-                self.switch_frame(frame)
-                if self.find_elements(by):
-                    return i
-                self.switch_default()
-            return None
-        except Exception as e:
-            print("An error occurred:", str(e))
-            return None
+
+    # def is_element_present_in_any_frame(self, by: By, frame=None) -> None | WebElement:
+    #     try:
+    #         self.find_element(by)
+    #         return frame
+    #     except Exception:
+    #         frames: List[WebElement] = self.find_elements((By.TAG_NAME, "iframe"))+self.find_elements((By.TAG_NAME, "frame"))
+    #         for frame in frames:
+    #             try:
+    #                 self.switch_frame(frame)
+    #                 if self.is_element_present_in_any_frame(by=by,frame=frame):
+    #                     return frame
+    #             except Exception:
+    #                 pass
+    #             finally:
+    #                 self.switch_default()
+    #         return None

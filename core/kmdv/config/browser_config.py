@@ -1,8 +1,7 @@
 import configparser
-import os
 
 class BrowserConfig:
-    iniFilePath = "resource/config/browserConfig.ini"
+    iniFilePath: str = "resource/config/browserConfig.ini"
     config = configparser.ConfigParser()
     config.read(iniFilePath)
 
@@ -28,7 +27,7 @@ class BrowserConfig:
     
     @staticmethod
     def getMultiBrowserList() -> list[str]:
-        multiBrowserList = BrowserConfig.config.get("BrowserConfig", "MultiBrowserList").split(",")
+        multiBrowserList: list[str] = BrowserConfig.config.get("BrowserConfig", "MultiBrowserList").split(",")
         if not BrowserConfig.isHeadless():
             return [browser for browser in multiBrowserList]
         else:
@@ -36,7 +35,7 @@ class BrowserConfig:
 
     @staticmethod
     def getDefaultBrowser() -> list[str]:
-        defaultBrowser = BrowserConfig.config.get("BrowserConfig", "DefaultBrowser")
+        defaultBrowser: str = BrowserConfig.config.get("BrowserConfig", "DefaultBrowser")
         if not BrowserConfig.isHeadless():
             return [defaultBrowser]
         else:

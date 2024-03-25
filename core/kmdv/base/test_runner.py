@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 from typing import Literal
+from core.kmdv.config.mail_config import MailConfig
 import psutil
 
 from core.kmdv.config.browser_config import BrowserConfig
@@ -220,7 +221,6 @@ class TestRunner:
                 test_case_list_target[
                     f"{test_case_name_list[-1].replace('::','.').split('[')[0]}"
                 ] = {"Folder":folder_name,"File":file_name,"Status": test_case_outcome.title(), "Log": log_list, "Reason" : reason}
-                # print(f"{test_case_outcome} - {test_case_name_list[-2]}.{test_case_name_list[-1].split('[')[0]} - {TestRunner.splitString(test_case_name,'[',']')}")
             TestRunner.json_report(
                 file_name=pytest_history_path,
                 completed_time=completed_time,
@@ -233,3 +233,7 @@ class TestRunner:
             print(
                 f"\033[96mTest Execution Summary : {completed_time}\033[0m\n\033[92mPassed - {passed_count}\033[0m\n\033[91mFailed - {failed_count}\033[0m\n\033[93mSkipped - {skipped_count}\033[0m"
             )
+
+            if MailConfig.isReportMail():
+                MailConfig.send_test_report(completed_time, passed_count, failed_count,skipped_count )
+                
